@@ -2,7 +2,7 @@ import React from "react";
 import { TouchableOpacity, Text } from "react-native";
 import { styles } from "../styles";
 
-const NextButton = ({ onPress }) => {
+const NextButton = ({ onPress, buttonText = "Let's Go" }) => {
   const handlePress = () => {
     console.log("NextButton pressed");
     if (onPress) {
@@ -16,7 +16,7 @@ const NextButton = ({ onPress }) => {
       activeOpacity={0.7}
       style={styles.buttonNext}
     >
-      <Text style={styles.buttonNextText}>Let's Go</Text>
+      <Text style={styles.buttonNextText}>{buttonText}</Text>
     </TouchableOpacity>
   );
 };

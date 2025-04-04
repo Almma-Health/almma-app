@@ -30,6 +30,20 @@ export const styles = StyleSheet.create({
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
   },
 
+  menuButton: {
+    position: "absolute",
+    top: 44,
+    left: 343,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  menuImage: {
+    width: 36,
+    height: 36,
+    resizeMode: "contain",
+  },
+
   buttonContainer: {
     position: "absolute",
     top: 558,

@@ -3,6 +3,7 @@ import { View, SafeAreaView, StyleSheet, TextInput, Text } from "react-native";
 import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import NextButton from "../components/NextButton";
+import MenuButton from "../components/MenuButton";
 
 const UserInfoPage = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -41,6 +42,7 @@ const UserInfoPage = ({ navigation }) => {
         <View style={styles.logoContainer}>
           <Logo />
         </View>
+        <MenuButton/>
       </View>
 
       {/* Form Content */}

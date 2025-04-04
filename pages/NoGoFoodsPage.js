@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import NextButton from "../components/NextButton";
+import MenuButton from "../components/MenuButton";
 
 const NoGoFoodsPage = ({ navigation, route }) => {
   const { name, email, dietaryPreference } = route.params;
@@ -64,6 +65,7 @@ const NoGoFoodsPage = ({ navigation, route }) => {
         <View style={styles.logoContainer}>
           <Logo />
         </View>
+        <MenuButton/>
       </View>
 
       {/* Form Content */}

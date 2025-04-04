@@ -5,6 +5,7 @@ import Logo from "../components/Logo";
 import WelcomeText from "../components/WelcomeText";
 import InfoText from "../components/InfoText";
 import NextButton from "../components/NextButton";
+import MenuButton from "../components/MenuButton";
 
 const WelcomePage = ({ navigation }) => {
   // Handle navigation to the next screen
@@ -20,6 +21,7 @@ const WelcomePage = ({ navigation }) => {
         <View style={styles.logoContainer}>
           <Logo />
         </View>
+        <MenuButton/>
       </View>
 
       {/* Welcome Text */}

@@ -4,6 +4,7 @@ import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import NextButton from "../components/NextButton";
 import { supabase } from '../utils/supabase';
+import MenuButton from "../components/MenuButton";
 
 const SummaryPage = ({ navigation, route }) => {
   const { name, email, dietaryPreference, noGoFoods } = route.params;
@@ -67,6 +68,7 @@ const SummaryPage = ({ navigation, route }) => {
         <View style={styles.logoContainer}>
           <Logo />
         </View>
+        <MenuButton/>
       </View>
 
       {/* Summary Content */}

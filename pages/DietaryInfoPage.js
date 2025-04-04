@@ -3,6 +3,7 @@ import { View, SafeAreaView, StyleSheet, Text, TouchableOpacity, ScrollView } fr
 import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import NextButton from "../components/NextButton";
+import MenuButton from "../components/MenuButton";
 
 const DietaryInfoPage = ({ navigation, route }) => {
   const { name, email } = route.params;
@@ -43,6 +44,7 @@ const DietaryInfoPage = ({ navigation, route }) => {
         <View style={styles.logoContainer}>
           <Logo />
         </View>
+        <MenuButton/>
       </View>
 
       {/* Form Content */}

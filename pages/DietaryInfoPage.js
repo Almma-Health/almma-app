@@ -113,8 +113,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
+    fontFamily: "Roboto",
+    fontWeight: "700",
     fontSize: 24,
-    fontWeight: "bold",
+    letterSpacing: -0.04,
+    color: "#011a59",
     marginBottom: 10,
     textAlign: "center",
   },
@@ -125,7 +128,8 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   optionsContainer: {
-    maxHeight: 400,
+    maxHeight: 300,
+    paddingBottom: 100,
   },
   optionItem: {
     borderWidth: 1,

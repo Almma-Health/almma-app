@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-    // Root styles
+  // Root styles
   root: {
     fontFamily: "Roboto",
     backgroundColor: "white",
@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 0, // No border
+    borderWidth: 0,
   },
 
   buttonBack: {
@@ -25,8 +25,8 @@ export const styles = StyleSheet.create({
     height: 44,
     backgroundColor: "#979797",
     borderRadius: 14,
-    justifyContent: "center",  // Ensure content is centered
-    alignItems: "center",      // Center horizontally
+    justifyContent: "center",
+    alignItems: "center",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
   },
 

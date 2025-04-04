@@ -105,8 +105,11 @@ const styles = StyleSheet.create({
     marginTop: 180,
   },
   title: {
+    fontFamily: "Roboto",
+    fontWeight: "700",
     fontSize: 24,
-    fontWeight: "bold",
+    letterSpacing: -0.04,
+    color: "#011a59",
     marginBottom: 30,
     textAlign: "center",
   },

@@ -20,6 +20,10 @@ const SummaryPage = ({ navigation, route }) => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleNextPress = () => {
+    navigation.navigate('ChooseRestaurant');
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
@@ -49,7 +53,7 @@ const SummaryPage = ({ navigation, route }) => {
         Alert.alert(
           'Success!', 
           'Your information has been saved successfully.',
-          [{ text: 'OK', onPress: () => navigation.navigate('Welcome') }]
+          [{ text: 'OK', onPress: () => navigation.navigate('ChooseRestaurant') }]
         );
       }
     } catch (err) {
@@ -104,7 +108,8 @@ const SummaryPage = ({ navigation, route }) => {
           <ActivityIndicator size="large" color="#4CAF50" />
         ) : (
           <NextButton 
-            onPress={handleSubmit} 
+            //onPress={handleSubmit} 
+            onPress={handleNextPress}
             buttonText="Submit" 
           />
         )}
@@ -135,6 +140,8 @@ const styles = StyleSheet.create({
   summaryContainer: {
     width: "85%",
     marginTop: 180,
+    maxHeight: 300,
+    paddingBottom: 100,
   },
   title: {
     fontSize: 24,
@@ -161,7 +168,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     position: "absolute",
-    bottom: 50,
+    marginTop: 100,
+    bottom: -20,
     height: 50,
     justifyContent: "center",
   },

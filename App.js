@@ -7,6 +7,7 @@ import DietaryInfoPage from "./pages/DietaryInfoPage";
 import NoGoFoodsPage from "./pages/NoGoFoodsPage";
 import SummaryPage from "./pages/SummaryPage";
 import WelcomePage from "./pages/WelcomePage";
+import ChooseRestaurantPage from "./pages/ChooseRestaurantPage"
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,7 @@ const App = () => {
         <Stack.Screen name="DietaryInfo" component={DietaryInfoPage} />
         <Stack.Screen name="NoGoFoods" component={NoGoFoodsPage} />
         <Stack.Screen name="Summary" component={SummaryPage} />
+        <Stack.Screen name="ChooseRestaurant" component={ChooseRestaurantPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );

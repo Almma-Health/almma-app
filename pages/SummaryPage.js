@@ -21,7 +21,12 @@ const SummaryPage = ({ navigation, route }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleNextPress = () => {
-    navigation.navigate('ChooseRestaurant');
+    navigation.navigate('ChooseRestaurant', {
+      name,
+      email,
+      dietaryPreference,
+      noGoFoods
+    });
   };
 
   const handleSubmit = async () => {

@@ -26,7 +26,9 @@ const generateId = () => {
   });
 };
 
-const ChooseRestaurantPage = ({ navigation }) => {
+const ChooseRestaurantPage = ({ navigation, route }) => {
+  const { name, email, dietaryPreference, noGoFoods } = route.params;
+
   const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
     console.warn("Google Maps API key not found. Add EXPO_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.");
@@ -61,6 +63,16 @@ const ChooseRestaurantPage = ({ navigation }) => {
     };
     getLocationAndId();
   }, []);
+
+  const handleNextPress = () => {
+    navigation.navigate('MenuItems', {
+      name,
+      email,
+      dietaryPreference,
+      noGoFoods,
+      selectedPlace
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -113,7 +125,9 @@ const ChooseRestaurantPage = ({ navigation }) => {
         )}
         </View>
 
-        <TouchableOpacity style={styles.nextButton}>
+        <TouchableOpacity 
+          style={styles.nextButton}
+          onPress={handleNextPress}>
           <Text style={styles.buttonText}>Let's go!</Text>
         </TouchableOpacity>
 

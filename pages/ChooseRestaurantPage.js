@@ -1,4 +1,3 @@
-import Config from 'react-native-config';
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -6,65 +5,62 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  Alert,
 } from "react-native";
-import axios from "axios";
+import * as Location from "expo-location";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import MenuButton from "../components/MenuButton";
-import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
-import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
 
-const id = uuidv4();
+const getLocationPermission = async () => {
+  let { status } = await Location.requestForegroundPermissionsAsync();
+  return status === "granted";
+};
+
+const generateId = () => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0,
+      v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+};
 
 const ChooseRestaurantPage = ({ navigation }) => {
-  const [region, setRegion] = useState(null);
-  const [nearestPlace, setNearestPlace] = useState(null);
-  const apiKey = Config.GOOGLE_MAPS_API_KEY;
+  const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    console.warn("Google Maps API key not found. Add EXPO_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.");
+  }
 
-  const getLocationPermission = async () => {
-    if (Platform.OS === "android") {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
-    }
-    return true;
-  };
+  const [location, setLocation] = useState(null);
+  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [id, setId] = useState(null);
 
-  const fetchNearestRestaurant = async () => {
-    const granted = await getLocationPermission();
-    if (!granted) {
-      Alert.alert("Permission Denied", "Location permission is required.");
-      return;
-    }
-
-    Geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setRegion({ latitude, longitude });
-
-        try {
-          const res = await axios.get(
-            "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&type=restaurant&key=${apiKey}"
-          );
-          if (res.data.results && res.data.results.length > 0) {
-            const topResult = res.data.results[0];
-            setNearestPlace(topResult.name);
-          } else {
-            Alert.alert("No restaurants found nearby.");
-          }
-        } catch (err) {
-          console.error("Failed to fetch nearby places:", err);
+  useEffect(() => {
+    const getLocationAndId = async () => {
+      try {
+        const granted = await getLocationPermission();
+        if (!granted) {
+          Alert.alert("Permission Denied", "Location permission is required.");
+          return;
         }
-      },
-      (error) => {
-        console.warn(error.message);
-        Alert.alert("Error getting location", error.message);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
-    );
-  };
+
+        const generatedId = generateId();
+        setId(generatedId);
+
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        setLocation({
+          latitude: currentLocation.coords.latitude,
+          longitude: currentLocation.coords.longitude,
+        });
+
+        console.log("Location obtained:", currentLocation.coords);
+      } catch (err) {
+        console.error("Error initializing location and ID:", err);
+      }
+    };
+    getLocationAndId();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -82,35 +78,43 @@ const ChooseRestaurantPage = ({ navigation }) => {
           Search by restaurant name, address, or your current location. We will recommend the best options for you!
         </Text>
 
-        {nearestPlace && (
-          <Text style={styles.resultText}>Nearest Restaurant: {nearestPlace}</Text>
-        )}
-
         <View style={styles.placesContainer}>
+        {location && (
           <GooglePlacesAutocomplete
             placeholder="Search for restaurants"
-            fetchDetails
+            fetchDetails={true}
             onPress={(data, details = null) => {
-              console.log(data, details);
+              console.log("Selected place:", details?.name, details?.formatted_address);
+              setSelectedPlace(details);
             }}
             query={{
               key: apiKey,
               language: "en",
-              types: "establishment",
+              location: `${location.latitude},${location.longitude}`,
+              rankby: "distance",
               keyword: "restaurant",
+            }}            
+            onFail={(error) => {
+              console.error("GooglePlacesAutocomplete error:", error);
             }}
             styles={{
               textInput: styles.searchInput,
               listView: styles.suggestions,
             }}
             enablePoweredByContainer={false}
+            debounce={200}
           />
+        )}
+         {selectedPlace && (
+          <View style={styles.resultCard}>
+            <Text style={styles.placeName}>{selectedPlace.name}</Text>
+            <Text style={styles.placeAddress}>{selectedPlace.formatted_address}</Text>
+          </View>
+        )}
         </View>
-        
-        <TouchableOpacity
-          style={styles.searchButton}
-        >
-          <Text style={styles.buttonText}>Search</Text>
+
+        <TouchableOpacity style={styles.nextButton}>
+          <Text style={styles.buttonText}>Let's go!</Text>
         </TouchableOpacity>
 
         <Text style={styles.orText}>Or take a picture of the menu instead!</Text>
@@ -166,8 +170,8 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderWidth: 1,
     borderRadius: 8,
-    margin: 20,
-    padding: 20,
+    padding: 15,
+    fontSize: 16,
     backgroundColor: "#fff",
   },
   suggestions: {
@@ -176,29 +180,48 @@ const styles = StyleSheet.create({
   placesContainer: {
     width: "100%",
     zIndex: 10,
-    marginBottom: 10,
+    padding: 10,
+    borderRadius: 8,
+    height: "30%",
   },
-  searchButton: {
+  resultCard: {
+    width: "100%",
+    backgroundColor: "#f4f4f4",
+    padding: 10,
+    marginVertical: 5,
+    borderRadius: 10,
+    top: -50,
+  },
+  placeName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#011a59",
+  },
+  placeAddress: {
+    fontSize: 14,
+    color: "#666",
+  },
+  nextButton: {
     backgroundColor: "#2e8ea7",
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 24,
-    marginTop: "60%",
     width: 305,
     height: 58,
+    marginVertical: 10,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   cameraButton: {
     backgroundColor: "#88becc",
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 24,
-    marginTop: 10,
     width: 305,
     height: 58,
+    marginVertical: 10,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   buttonText: {
     color: "white",
@@ -206,13 +229,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   orText: {
-    color: "#666",
-    marginVertical: 10,
-    textAlign: "center",
-  },
-  resultText: {
-    fontSize: 16,
-    color: "#444",
+    color: "#979797",
+    fontSize: 20,
     marginVertical: 10,
     textAlign: "center",
   },

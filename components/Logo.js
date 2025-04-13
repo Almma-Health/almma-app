@@ -5,7 +5,7 @@ import { styles } from "../styles";
 const Logo = ({ small }) => {
   return (
     <Image 
-      source={require("../assets/High_ResLogo.jpg")} 
+      source={require("../assets/Low_ResLogo.jpg")} 
       style={small ? styles.smallLogo : styles.logo} 
     />
   );

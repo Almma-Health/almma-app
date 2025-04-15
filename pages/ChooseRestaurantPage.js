@@ -131,9 +131,7 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
         <View style={styles.logoContainer}>
           <Logo />
         </View>
-        <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
-          <Ionicons name="menu" size={28} color="#444" />
-        </TouchableOpacity>
+        <MenuButton onPress={toggleMenu} />
       </View>
 
       <Modal

@@ -36,7 +36,7 @@ const App = () => {
         <Stack.Screen name="Summary" component={SummaryPage} />
         <Stack.Screen name="ChooseRestaurant" component={ChooseRestaurantPage} />
         <Stack.Screen name="HelpContact" component={HelpContactPage} /> 
-        {/* <Stack.Screen name="RestaurantReviews" component={RestaurantReviewsPage} /> */}
+        <Stack.Screen name="RestaurantReviews" component={RestaurantReviewsPage} />
         <Stack.Screen name="Security" component={SecurityPage} />
         <Stack.Screen name="UserProfile" component={UserProfilePage} />
       </Stack.Navigator>

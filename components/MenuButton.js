@@ -2,8 +2,7 @@ import React from "react";
 import { TouchableOpacity, Image } from "react-native";
 import { styles } from "../styles";
 
-
-const BackButton = ({ onPress }) => {
+const MenuButton = ({ onPress }) => {
   const handlePress = () => {
     console.log("Menu Button pressed");
     if (onPress) {
@@ -18,4 +17,4 @@ const BackButton = ({ onPress }) => {
   );
 };
 
-export default BackButton;
+export default MenuButton;

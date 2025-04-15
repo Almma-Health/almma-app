@@ -8,6 +8,10 @@ import NoGoFoodsPage from "./pages/NoGoFoodsPage";
 import SummaryPage from "./pages/SummaryPage";
 import WelcomePage from "./pages/WelcomePage";
 import ChooseRestaurantPage from "./pages/ChooseRestaurantPage"
+import HelpContactPage from "./pages/HelpContactPage";
+import RestaurantReviewsPage from "./pages/RestaurantReviewsPage";
+import SecurityPage from "./pages/SecurityPage";
+import UserProfilePage from "./pages/UserProfilePage";
 
 const Stack = createStackNavigator();
 
@@ -31,6 +35,10 @@ const App = () => {
         <Stack.Screen name="NoGoFoods" component={NoGoFoodsPage} />
         <Stack.Screen name="Summary" component={SummaryPage} />
         <Stack.Screen name="ChooseRestaurant" component={ChooseRestaurantPage} />
+        <Stack.Screen name="HelpContact" component={HelpContactPage} /> 
+        {/* <Stack.Screen name="RestaurantReviews" component={RestaurantReviewsPage} /> */}
+        <Stack.Screen name="Security" component={SecurityPage} />
+        <Stack.Screen name="UserProfile" component={UserProfilePage} />
       </Stack.Navigator>
     </NavigationContainer>
   );

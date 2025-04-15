@@ -6,9 +6,13 @@ import {
   Text,
   TouchableOpacity,
   Alert,
+  Modal,
+  FlatList,
+  Image
 } from "react-native";
 import * as Location from "expo-location";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import { Ionicons } from "@expo/vector-icons";
 import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import MenuButton from "../components/MenuButton";
@@ -37,6 +41,9 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
   const [location, setLocation] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [id, setId] = useState(null);
+  const [restaurants, setRestaurants] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   useEffect(() => {
     const getLocationAndId = async () => {
@@ -64,6 +71,23 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     getLocationAndId();
   }, []);
 
+  useEffect(() => {
+    // Load restaurants data
+    // This is a placeholder for your actual data loading logic
+    fetchRestaurants();
+  }, []);
+
+  const fetchRestaurants = () => {
+    // Placeholder for API call
+    setIsLoading(false);
+    // Mock data
+    setRestaurants([
+      { id: 1, name: "Green Garden", cuisine: "Vegetarian", rating: 4.5 },
+      { id: 2, name: "Pasta Palace", cuisine: "Italian", rating: 4.2 },
+      { id: 3, name: "Sushi Supreme", cuisine: "Japanese", rating: 4.7 },
+    ]);
+  };
+
   const handleNextPress = () => {
     navigation.navigate('MenuItems', {
       name,
@@ -74,6 +98,32 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     });
   };
 
+  const toggleMenu = () => {
+    setMenuVisible(!menuVisible);
+  };
+
+  const navigateTo = (page) => {
+    setMenuVisible(false);
+    navigation.navigate(page);
+  };
+
+  const renderMenuOption = ({ item }) => (
+    <TouchableOpacity
+      style={styles.menuItem}
+      onPress={() => navigateTo(item.page)}
+    >
+      <Ionicons name={item.icon} size={24} color="#444" style={styles.menuIcon} />
+      <Text style={styles.menuText}>{item.title}</Text>
+    </TouchableOpacity>
+  );
+
+  const menuOptions = [
+    { id: 'profile', title: 'My Profile', icon: 'person-outline', page: 'UserProfile' },
+    { id: 'security', title: 'Security Settings', icon: 'shield-outline', page: 'Security' },
+    { id: 'reviews', title: 'Restaurant Reviews', icon: 'restaurant-outline', page: 'RestaurantReviews' },
+    { id: 'help', title: 'Help & Contact', icon: 'help-circle-outline', page: 'HelpContact' },
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -81,8 +131,39 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
         <View style={styles.logoContainer}>
           <Logo />
         </View>
-        <MenuButton />
+        <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+          <Ionicons name="menu" size={28} color="#444" />
+        </TouchableOpacity>
       </View>
+
+      <Modal
+        visible={menuVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.menuContainer}>
+            <View style={styles.menuHeader}>
+              <Text style={styles.menuTitle}>Menu</Text>
+              <TouchableOpacity onPress={() => setMenuVisible(false)}>
+                <Ionicons name="close" size={24} color="#444" />
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={menuOptions}
+              renderItem={renderMenuOption}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.menuList}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <View style={styles.formContainer}>
         <Text style={styles.title}>Where are you dining?</Text>
@@ -247,6 +328,100 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginVertical: 10,
     textAlign: "center",
+  },
+  menuButton: {
+    padding: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-start',
+  },
+  menuContainer: {
+    width: 300,
+    backgroundColor: 'white',
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    paddingBottom: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    height: '100%',
+  },
+  menuHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  menuTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  menuList: {
+    paddingVertical: 10,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  menuIcon: {
+    marginRight: 16,
+  },
+  menuText: {
+    fontSize: 16,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    marginTop: 150,
+  },
+  restaurantList: {
+    paddingBottom: 20,
+  },
+  restaurantCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: "#f8f8f8",
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  restaurantInfo: {
+    flex: 1,
+  },
+  restaurantName: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  restaurantCuisine: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 4,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: "#666",
   },
 });
 

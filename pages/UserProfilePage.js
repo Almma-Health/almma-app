@@ -9,6 +9,8 @@ import {
   TextInput,
   ScrollView,
   Alert,
+  Modal,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import BackButton from "../components/BackButton";
@@ -17,6 +19,7 @@ import MenuButton from "../components/MenuButton";
 
 const UserProfilePage = ({ navigation }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
   const [profile, setProfile] = useState({
     name: "John Doe",
     email: "john.doe@example.com",
@@ -37,6 +40,32 @@ const UserProfilePage = ({ navigation }) => {
     setEditProfile(profile);
     setIsEditing(false);
   };
+
+  const toggleMenu = () => {
+    setMenuVisible(!menuVisible);
+  };
+
+  const navigateTo = (page) => {
+    setMenuVisible(false);
+    navigation.navigate(page);
+  };
+
+  const renderMenuOption = ({ item }) => (
+    <TouchableOpacity
+      style={styles.menuItem}
+      onPress={() => navigateTo(item.page)}
+    >
+      <Ionicons name={item.icon} size={24} color="#444" style={styles.menuIcon} />
+      <Text style={styles.menuText}>{item.title}</Text>
+    </TouchableOpacity>
+  );
+
+  const menuOptions = [
+    { id: 'profile', title: 'My Profile', icon: 'person-outline', page: 'UserProfile' },
+    { id: 'security', title: 'Security Settings', icon: 'shield-outline', page: 'Security' },
+    { id: 'reviews', title: 'Restaurant Reviews', icon: 'restaurant-outline', page: 'RestaurantReviews' },
+    { id: 'help', title: 'Help & Contact', icon: 'help-circle-outline', page: 'HelpContact' },
+  ];
 
   const ProfileField = ({ label, value, onChange, editable }) => (
     <View style={styles.fieldContainer}>
@@ -62,14 +91,42 @@ const UserProfilePage = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header: Back Button + Logo */}
       <View style={styles.header}>
         <BackButton onPress={() => navigation.goBack()} />
         <View style={styles.logoContainer}>
           <Logo />
         </View>
-        <MenuButton />
+        <MenuButton onPress={toggleMenu} />
       </View>
+
+      <Modal
+        visible={menuVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.menuContainer}>
+            <View style={styles.menuHeader}>
+              <Text style={styles.menuTitle}>Menu</Text>
+              <TouchableOpacity onPress={() => setMenuVisible(false)}>
+                <Ionicons name="close" size={24} color="#444" />
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={menuOptions}
+              renderItem={renderMenuOption}
+              keyExtractor={item => item.id}
+              contentContainerStyle={styles.menuList}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       <ScrollView style={styles.contentContainer}>
         <View style={styles.profileHeader}>
@@ -287,6 +344,53 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     color: "#333",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-start',
+  },
+  menuContainer: {
+    width: 300,
+    backgroundColor: 'white',
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    paddingBottom: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    height: '100%',
+  },
+  menuHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  menuTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  menuList: {
+    paddingVertical: 10,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  menuIcon: {
+    marginRight: 16,
+  },
+  menuText: {
+    fontSize: 16,
   },
 });
 

@@ -89,12 +89,43 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
   };
 
   const handleNextPress = () => {
-    navigation.navigate('MenuItems', {
-      name,
-      email,
-      dietaryPreference,
-      noGoFoods,
-      selectedPlace
+    if (!selectedPlace) {
+      Alert.alert("Please select a restaurant", "Search and select a restaurant to continue.");
+      return;
+    }
+
+    // Mock menu items data - in a real app this would come from your backend
+    const mockMenuItems = [
+      { 
+        name: "Salad with Sauteed Vegetables",
+        sustainability: "High sustainability",
+        sustainabilityColor: "#4CAF50"
+      },
+      { 
+        name: "Chicken Burrito Salad",
+        sustainability: "Medium sustainability",
+        sustainabilityColor: "#FFC107"
+      },
+      { 
+        name: "Carnitas Burrito Bowl (no rice)",
+        sustainability: "Low sustainability",
+        sustainabilityColor: "#F44336"
+      }
+    ];
+
+    navigation.navigate('RestaurantMenu', {
+      restaurant: {
+        name: selectedPlace.name,
+        address: selectedPlace.formatted_address,
+        placeId: selectedPlace.place_id
+      },
+      menuItems: mockMenuItems,
+      userPreferences: {
+        name,
+        email,
+        dietaryPreference,
+        noGoFoods
+      }
     });
   };
 
@@ -216,6 +247,49 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
           onPress={() => navigation.navigate("CameraPage")}
         >
           <Text style={styles.buttonText}>Open camera</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.demoButton}
+          onPress={() => {
+            // Mock data for demo mode
+            const mockRestaurant = {
+              name: "Chipotle",
+              address: "123 Demo Street, San Francisco, CA 94105",
+              placeId: "demo-place-id"
+            };
+
+            const mockMenuItems = [
+              { 
+                name: "Salad with Sauteed Vegetables",
+                sustainability: "High sustainability",
+                sustainabilityColor: "#4CAF50"
+              },
+              { 
+                name: "Chicken Burrito Salad",
+                sustainability: "Medium sustainability",
+                sustainabilityColor: "#FFC107"
+              },
+              { 
+                name: "Carnitas Burrito Bowl (no rice)",
+                sustainability: "Low sustainability",
+                sustainabilityColor: "#F44336"
+              }
+            ];
+
+            navigation.navigate('RestaurantMenu', {
+              restaurant: mockRestaurant,
+              menuItems: mockMenuItems,
+              userPreferences: {
+                name,
+                email,
+                dietaryPreference,
+                noGoFoods
+              }
+            });
+          }}
+        >
+          <Text style={styles.demoButtonText}>Demo Mode (No API Key)</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -420,6 +494,20 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontSize: 14,
     color: "#666",
+  },
+  demoButton: {
+    backgroundColor: '#88becc33',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: '#88becc',
+  },
+  demoButtonText: {
+    color: '#2e8ea7',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });
 

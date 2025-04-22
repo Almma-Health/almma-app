@@ -56,21 +56,30 @@ const LoginPage = () => {
 
         <TouchableOpacity
           style={[styles.socialButton, styles.facebookButton]}
-          onPress={() => {/* TODO: Implement Facebook login */}}
+          onPress={() => {
+            // TODO: Implement Facebook login
+            navigation.navigate('OAuthUsername');
+          }}
         >
           <Text style={styles.socialButtonText}>Log in with Facebook</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.socialButton, styles.googleButton]}
-          onPress={() => {/* TODO: Implement Google login */}}
+          onPress={() => {
+            // TODO: Implement Google login
+            navigation.navigate('OAuthUsername');
+          }}
         >
           <Text style={styles.socialButtonText}>Log in with Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.socialButton, styles.appleButton]}
-          onPress={() => {/* TODO: Implement Apple login */}}
+          onPress={() => {
+            // TODO: Implement Apple login
+            navigation.navigate('OAuthUsername');
+          }}
         >
           <Text style={styles.socialButtonText}>Log in with Apple</Text>
         </TouchableOpacity>

@@ -11,7 +11,7 @@ const SignupPage = () => {
 
   const handleSignup = () => {
     // TODO: Implement signup logic
-    navigation.navigate('UserInfo');
+    navigation.navigate('Welcome');
   };
 
   return (
@@ -74,21 +74,30 @@ const SignupPage = () => {
 
         <TouchableOpacity
           style={[styles.socialButton, styles.facebookButton]}
-          onPress={() => {/* TODO: Implement Facebook signup */}}
+          onPress={() => {
+            // TODO: Implement Facebook signup
+            navigation.navigate('OAuthUsername');
+          }}
         >
           <Text style={styles.socialButtonText}>Sign Up with Facebook</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.socialButton, styles.googleButton]}
-          onPress={() => {/* TODO: Implement Google signup */}}
+          onPress={() => {
+            // TODO: Implement Google signup
+            navigation.navigate('OAuthUsername');
+          }}
         >
           <Text style={[styles.socialButtonText, styles.googleText]}>Sign Up with Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.socialButton, styles.appleButton]}
-          onPress={() => {/* TODO: Implement Apple signup */}}
+          onPress={() => {
+            // TODO: Implement Apple signup
+            navigation.navigate('OAuthUsername');
+          }}
         >
           <Text style={styles.socialButtonText}>Sign Up with Apple</Text>
         </TouchableOpacity>

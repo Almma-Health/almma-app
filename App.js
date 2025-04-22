@@ -5,7 +5,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import UserInfoPage from "./pages/UserInfoPage";
+import UserInfoPage from "./pages/discarded_pages/UserInfoPage";
 import DietaryInfoPage from "./pages/DietaryInfoPage";
 import NoGoFoodsPage from "./pages/NoGoFoodsPage";
 import SummaryPage from "./pages/SummaryPage";

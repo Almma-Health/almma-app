@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { View, SafeAreaView, StyleSheet, TextInput, Text } from "react-native";
-import BackButton from "../components/BackButton";
-import Logo from "../components/Logo";
-import NextButton from "../components/NextButton";
-import MenuButton from "../components/MenuButton";
+import BackButton from "../../components/BackButton";
+import Logo from "../../components/Logo";
+import NextButton from "../../components/NextButton";
+import MenuButton from "../../components/MenuButton";
 
 const UserInfoPage = ({ navigation }) => {
   const [name, setName] = useState("");

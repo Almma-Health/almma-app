@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
 import {
   View,
   SafeAreaView,
@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  FlatList,
-  Image
+  FlatList
 } from "react-native";
+import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { Ionicons } from "@expo/vector-icons";
@@ -38,6 +38,9 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     console.warn("Google Maps API key not found. Add EXPO_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.");
   }
 
+  
+  const [mapVisible, setMapVisible] = useState(false);
+  const [mapMarker, setMapMarker] = useState(null);
   const [location, setLocation] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [id, setId] = useState(null);
@@ -72,15 +75,11 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    // Load restaurants data
-    // This is a placeholder for your actual data loading logic
     fetchRestaurants();
   }, []);
 
   const fetchRestaurants = () => {
-    // Placeholder for API call
     setIsLoading(false);
-    // Mock data
     setRestaurants([
       { id: 1, name: "Green Garden", cuisine: "Vegetarian", rating: 4.5 },
       { id: 2, name: "Pasta Palace", cuisine: "Italian", rating: 4.2 },
@@ -94,7 +93,6 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
       return;
     }
 
-    // Mock menu items data - in a real app this would come from your backend
     const mockMenuItems = [
       { 
         name: "Salad with Sauteed Vegetables",
@@ -200,39 +198,44 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
           Search by restaurant name, address, or your current location. We will recommend the best options for you!
         </Text>
 
-        <View style={styles.placesContainer}>
-        {location && (
-          <GooglePlacesAutocomplete
-            placeholder="Search for restaurants"
-            fetchDetails={true}
-            onPress={(data, details = null) => {
-              console.log("Selected place:", details?.name, details?.formatted_address);
-              setSelectedPlace(details);
-            }}
-            query={{
-              key: apiKey,
-              language: "en",
-              location: `${location.latitude},${location.longitude}`,
-              rankby: "distance",
-              keyword: "restaurant",
-            }}            
-            onFail={(error) => {
-              console.error("GooglePlacesAutocomplete error:", error);
-            }}
-            styles={{
-              textInput: styles.searchInput,
-              listView: styles.suggestions,
-            }}
-            enablePoweredByContainer={false}
-            debounce={200}
-          />
-        )}
-         {selectedPlace && (
-          <View style={styles.resultCard}>
-            <Text style={styles.placeName}>{selectedPlace.name}</Text>
-            <Text style={styles.placeAddress}>{selectedPlace.formatted_address}</Text>
-          </View>
-        )}
+        <View style={styles.placesAndMapButtonContainer}>
+          {location && (
+            <>
+              <View style={styles.searchBarWrapper}>
+                <GooglePlacesAutocomplete
+                  placeholder="Search for restaurants"
+                  fetchDetails={true}
+                  onPress={(data, details = null) => {
+                    console.log("Selected place:", details?.name, details?.formatted_address);
+                    setSelectedPlace(details);
+                  }}
+                  query={{
+                    key: apiKey,
+                    language: "en",
+                    location: `${location.latitude},${location.longitude}`,
+                    rankby: "distance",
+                    keyword: "restaurant",
+                  }}
+                  onFail={(error) => {
+                    console.error("GooglePlacesAutocomplete error:", error);
+                  }}
+                  styles={{
+                    textInput: styles.searchInput,
+                    listView: styles.suggestions,
+                  }}
+                  enablePoweredByContainer={false}
+                  debounce={200}
+                />
+              </View>
+
+              <TouchableOpacity
+                style={styles.mapButtonSquare}
+                onPress={() => setMapVisible(true)}
+              >
+                <Ionicons name="map-outline" size={24} color="#011a59" />
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         <TouchableOpacity 
@@ -292,6 +295,45 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
           <Text style={styles.demoButtonText}>Demo Mode (No API Key)</Text>
         </TouchableOpacity>
       </View>
+      <Modal
+        visible={mapVisible}
+        animationType="slide"
+        onRequestClose={() => setMapVisible(false)}
+        >
+        <View style={{ flex: 1 }}>
+      <TouchableOpacity
+        style={{ padding: 10, backgroundColor: '#eee' }}
+        onPress={() => setMapVisible(false)}
+      >
+      <Text style={styles.closeMapText}>Close Map</Text>
+      </TouchableOpacity>
+
+      {location && (
+        <MapView
+          style={{ flex: 1 }}
+          initialRegion={{
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          }}
+          onPress={(e) => {
+            const { latitude, longitude } = e.nativeEvent.coordinate;
+            setMapMarker({ latitude, longitude });
+            setSelectedPlace({
+              name: "Pinned Location",
+              formatted_address: "Dropped pin",
+              place_id: `latlng-${latitude}-${longitude}`,
+            });
+          }}
+        >
+        {mapMarker && (
+          <Marker coordinate={mapMarker} title="Selected Location" />
+        )}
+      </MapView>
+    )}
+  </View>
+</Modal>
     </SafeAreaView>
   );
 };
@@ -317,6 +359,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
   },
+  placesAndMapButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    marginBottom: 30,
+  },
   title: {
     fontFamily: "Roboto",
     fontWeight: "700",
@@ -333,23 +382,47 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#979797",
   },
+  searchBarWrapper: {
+    flex: 1,
+    marginRight: 10,
+  },
   searchInput: {
     borderColor: "#ddd",
     borderWidth: 1,
     borderRadius: 8,
     padding: 15,
+    paddingLeft: 10,
     fontSize: 16,
+    height: 48,
+    width: "10%",
     backgroundColor: "#fff",
+  },
+  closeMapText: {
+    marginTop: 60,
+    marginBottom: 10,
+    color: '#007AFF',
+    fontSize: 16,
   },
   suggestions: {
     zIndex: 10,
   },
   placesContainer: {
-    width: "100%",
+    width: "85%",
+    paddingLeft: -20,
+    paddingRight: 80,
     zIndex: 10,
     padding: 10,
     borderRadius: 8,
     height: "30%",
+  },
+  mapButtonSquare: {
+    width: 50,
+    height: 50,
+    marginLeft: 8,
+    backgroundColor: "#c4dce4",
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
   resultCard: {
     width: "100%",
@@ -370,6 +443,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     backgroundColor: "#2e8ea7",
+    marginTop: 80,
     paddingVertical: 10,
     paddingHorizontal: 30,
     borderRadius: 24,

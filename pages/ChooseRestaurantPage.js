@@ -136,16 +136,6 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     navigation.navigate(page);
   };
 
-  const renderMenuOption = ({ item }) => (
-    <TouchableOpacity
-      style={styles.menuItem}
-      onPress={() => navigateTo(item.page)}
-    >
-      <Ionicons name={item.icon} size={24} color="#444" style={styles.menuIcon} />
-      <Text style={styles.menuText}>{item.title}</Text>
-    </TouchableOpacity>
-  );
-
   const menuOptions = [
     { id: 'profile', title: 'My Profile', icon: 'person-outline', page: 'UserProfile' },
     { id: 'security', title: 'Security Settings', icon: 'shield-outline', page: 'Security' },
@@ -155,25 +145,34 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
 
   const fetchPlaceDetails = async (latitude, longitude) => {
     try {
-      const response = await axios.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', {
+      const geocodeResponse = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
         params: {
-          location: `${latitude},${longitude}`,
-          radius: 1000,
-          keyword: 'restaurant',
-          key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+          latlng: `${latitude},${longitude}`,
+          key: apiKey,
         },
       });
-
-      if (response.data.results && response.data.results.length > 0) {
-        const place = response.data.results[0];
+  
+      const results = geocodeResponse.data.results;
+      if (results.length > 0) {
+        const placeId = results[0].place_id;
+  
+        const placeDetailsResponse = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
+          params: {
+            place_id: placeId,
+            key: apiKey,
+            fields: 'name,formatted_address,place_id',
+          },
+        });
+  
+        const placeDetails = placeDetailsResponse.data.result;
         setSelectedPlace({
-          name: place.name,
-          formatted_address: place.vicinity,
-          place_id: place.place_id,
+          name: placeDetails.name,
+          formatted_address: placeDetails.formatted_address,
+          place_id: placeDetails.place_id,
         });
       } else {
         setSelectedPlace({
-          name: 'No restaurant found',
+          name: 'No place found',
           formatted_address: 'Try another location',
           place_id: `latlng-${latitude}-${longitude}`,
         });
@@ -181,7 +180,7 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     } catch (error) {
       console.error("Error fetching place details:", error);
     }
-  };
+  };  
 
   return (
     <SafeAreaView style={styles.container}>

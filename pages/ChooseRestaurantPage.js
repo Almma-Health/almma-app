@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Alert,
   Modal,
-  FlatList
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
@@ -16,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import MenuButton from "../components/MenuButton";
+import axios from 'axios';
 
 const getLocationPermission = async () => {
   let { status } = await Location.requestForegroundPermissionsAsync();
@@ -153,6 +153,36 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     { id: 'help', title: 'Help & Contact', icon: 'help-circle-outline', page: 'HelpContact' },
   ];
 
+  const fetchPlaceDetails = async (latitude, longitude) => {
+    try {
+      const response = await axios.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', {
+        params: {
+          location: `${latitude},${longitude}`,
+          radius: 1000,
+          keyword: 'restaurant',
+          key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+        },
+      });
+
+      if (response.data.results && response.data.results.length > 0) {
+        const place = response.data.results[0];
+        setSelectedPlace({
+          name: place.name,
+          formatted_address: place.vicinity,
+          place_id: place.place_id,
+        });
+      } else {
+        setSelectedPlace({
+          name: 'No restaurant found',
+          formatted_address: 'Try another location',
+          place_id: `latlng-${latitude}-${longitude}`,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching place details:", error);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -163,33 +193,34 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
         <MenuButton onPress={toggleMenu} />
       </View>
 
-      <Modal
-        visible={menuVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setMenuVisible(false)}
-      >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={() => setMenuVisible(false)}
-        >
-          <View style={styles.menuContainer}>
-            <View style={styles.menuHeader}>
-              <Text style={styles.menuTitle}>Menu</Text>
-              <TouchableOpacity onPress={() => setMenuVisible(false)}>
-                <Ionicons name="close" size={24} color="#444" />
-              </TouchableOpacity>
-            </View>
-            
-            <FlatList
-              data={menuOptions}
-              renderItem={renderMenuOption}
-              keyExtractor={item => item.id}
-              contentContainerStyle={styles.menuList}
-            />
-          </View>
-        </TouchableOpacity>
+      <Modal visible={mapVisible} animationType="slide" onRequestClose={() => setMapVisible(false)}>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={{ padding: 10, backgroundColor: '#eee' }}
+            onPress={() => setMapVisible(false)}
+          >
+            <Text style={styles.closeMapText}>Close Map</Text>
+          </TouchableOpacity>
+
+          {location && (
+            <MapView
+              style={{ flex: 1 }}
+              initialRegion={{
+                latitude: location.latitude,
+                longitude: location.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+              onPress={(e) => {
+                const { latitude, longitude } = e.nativeEvent.coordinate;
+                setMapMarker({ latitude, longitude });
+                fetchPlaceDetails(latitude, longitude);
+              }}
+            >
+              {mapMarker && <Marker coordinate={mapMarker} title="Selected Location" />}
+            </MapView>
+          )}
+        </View>
       </Modal>
 
       <View style={styles.formContainer}>
@@ -235,6 +266,12 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
                 <Ionicons name="map-outline" size={24} color="#011a59" />
               </TouchableOpacity>
             </>
+          )}
+          {selectedPlace && (
+            <View style={styles.resultCard}>
+              <Text style={styles.placeName}>{selectedPlace.name}</Text>
+              <Text style={styles.placeAddress}>{selectedPlace.formatted_address}</Text>
+            </View>
           )}
         </View>
 
@@ -360,10 +397,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   placesAndMapButtonContainer: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    width: "100%",
+    width: "90%",
+    height: "30%",
     marginBottom: 30,
   },
   title: {
@@ -384,17 +421,18 @@ const styles = StyleSheet.create({
   },
   searchBarWrapper: {
     flex: 1,
-    marginRight: 10,
+    marginRight: 40,
+    width: "90%"
   },
   searchInput: {
     borderColor: "#ddd",
     borderWidth: 1,
     borderRadius: 8,
     padding: 15,
-    paddingLeft: 10,
+    marginRight: 20,
     fontSize: 16,
     height: 48,
-    width: "10%",
+    width: 500,
     backgroundColor: "#fff",
   },
   closeMapText: {
@@ -416,9 +454,11 @@ const styles = StyleSheet.create({
     height: "30%",
   },
   mapButtonSquare: {
+    position: "absolute",
+    top: 0,
+    left: 270,
     width: 50,
     height: 50,
-    marginLeft: 8,
     backgroundColor: "#c4dce4",
     borderRadius: 8,
     justifyContent: "center",
@@ -443,19 +483,18 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     backgroundColor: "#2e8ea7",
-    marginTop: 80,
-    paddingVertical: 10,
+    paddingVertical: 5,
     paddingHorizontal: 30,
     borderRadius: 24,
     width: 305,
     height: 58,
-    marginVertical: 10,
+    marginBottom: 10,
     justifyContent: "center",
     alignItems: "center",
   },
   cameraButton: {
     backgroundColor: "#88becc",
-    paddingVertical: 12,
+    paddingVertical: 5,
     paddingHorizontal: 30,
     borderRadius: 24,
     width: 305,
@@ -472,7 +511,7 @@ const styles = StyleSheet.create({
   orText: {
     color: "#979797",
     fontSize: 20,
-    marginVertical: 10,
+    marginVertical: 5,
     textAlign: "center",
   },
   menuButton: {
@@ -574,7 +613,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 16,
-    marginTop: 20,
+    marginTop: 5,
     borderWidth: 1,
     borderColor: '#88becc',
   },

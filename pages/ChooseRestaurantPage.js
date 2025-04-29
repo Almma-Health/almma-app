@@ -16,6 +16,7 @@ import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import MenuButton from "../components/MenuButton";
 import axios from 'axios';
+import { createMockCompatibilityRatings } from "../utils/foodCompatibilityRater";
 
 const getLocationPermission = async () => {
   let { status } = await Location.requestForegroundPermissionsAsync();
@@ -93,23 +94,29 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
       return;
     }
 
-    const mockMenuItems = [
-      { 
-        name: "Salad with Sauteed Vegetables",
-        sustainability: "High sustainability",
-        sustainabilityColor: "#4CAF50"
-      },
-      { 
-        name: "Chicken Burrito Salad",
-        sustainability: "Medium sustainability",
-        sustainabilityColor: "#FFC107"
-      },
-      { 
-        name: "Carnitas Burrito Bowl (no rice)",
-        sustainability: "Low sustainability",
-        sustainabilityColor: "#F44336"
-      }
+    // Basic menu items
+    const baseMenuItems = [
+      { name: "Salad with Sauteed Vegetables" },
+      { name: "Chicken Burrito Salad" },
+      { name: "Carnitas Burrito Bowl (no rice)" },
+      { name: "Bean and Cheese Burrito" },
+      { name: "Grilled Vegetable Tacos" }
     ];
+
+    // User preferences from the route params
+    const userPreferences = {
+      name,
+      dietaryPreference,
+      noGoFoods: Array.isArray(noGoFoods) 
+        ? noGoFoods 
+        : noGoFoods.split(',').filter(item => item && item.trim().length > 0)
+    };
+
+    // Generate compatibility ratings for menu items
+    const ratedMenuItems = createMockCompatibilityRatings(
+      userPreferences,
+      baseMenuItems
+    );
 
     navigation.navigate('RestaurantMenu', {
       restaurant: {
@@ -117,13 +124,8 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
         address: selectedPlace.formatted_address,
         placeId: selectedPlace.place_id
       },
-      menuItems: mockMenuItems,
-      userPreferences: {
-        name,
-        email,
-        dietaryPreference,
-        noGoFoods
-      }
+      menuItems: ratedMenuItems,
+      userPreferences
     });
   };
 
@@ -181,6 +183,51 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
       console.error("Error fetching place details:", error);
     }
   };  
+
+  const demoHandler = () => {
+    // Mock restaurant data
+    const mockRestaurant = {
+      name: "Chipotle",
+      address: "123 Demo Street, San Francisco, CA 94105",
+      placeId: "demo-place-id"
+    };
+
+    // Basic menu items
+    const baseMenuItems = [
+      { name: "Salad with Sauteed Vegetables" },
+      { name: "Chicken Burrito Salad" },
+      { name: "Carnitas Burrito Bowl (no rice)" },
+      { name: "Bean and Cheese Burrito" },
+      { name: "Grilled Vegetable Tacos" }
+    ];
+
+    // User preferences
+    const userPreferences = {
+      name,
+      dietaryPreference,
+      noGoFoods: Array.isArray(noGoFoods) 
+        ? noGoFoods 
+        : noGoFoods.split(',').filter(item => item && item.trim().length > 0)
+    };
+
+    console.log("User preferences for rating:", userPreferences);
+
+    // Generate compatibility ratings for menu items
+    const ratedMenuItems = createMockCompatibilityRatings(
+      userPreferences,
+      baseMenuItems
+    );
+
+    console.log("Rated menu items:", ratedMenuItems);
+
+
+    console.log("Navigating to RestaurantMenu");
+    navigation.navigate('RestaurantMenu', {
+      restaurant: mockRestaurant,
+      menuItems: ratedMenuItems,
+      userPreferences
+    });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -290,45 +337,9 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
 
         <TouchableOpacity
           style={styles.demoButton}
-          onPress={() => {
-            // Mock data for demo mode
-            const mockRestaurant = {
-              name: "Chipotle",
-              address: "123 Demo Street, San Francisco, CA 94105",
-              placeId: "demo-place-id"
-            };
-
-            const mockMenuItems = [
-              { 
-                name: "Salad with Sauteed Vegetables",
-                sustainability: "High sustainability",
-                sustainabilityColor: "#4CAF50"
-              },
-              { 
-                name: "Chicken Burrito Salad",
-                sustainability: "Medium sustainability",
-                sustainabilityColor: "#FFC107"
-              },
-              { 
-                name: "Carnitas Burrito Bowl (no rice)",
-                sustainability: "Low sustainability",
-                sustainabilityColor: "#F44336"
-              }
-            ];
-
-            navigation.navigate('RestaurantMenu', {
-              restaurant: mockRestaurant,
-              menuItems: mockMenuItems,
-              userPreferences: {
-                name,
-                email,
-                dietaryPreference,
-                noGoFoods
-              }
-            });
-          }}
+          onPress={demoHandler}
         >
-          <Text style={styles.demoButtonText}>Demo Mode (No API Key)</Text>
+          <Text style={styles.demoButtonText}>Demo Mode (LangChain Rating)</Text>
         </TouchableOpacity>
       </View>
       <Modal

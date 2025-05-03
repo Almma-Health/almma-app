@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   SafeAreaView,
@@ -32,19 +32,15 @@ const generateId = () => {
 
 const ChooseRestaurantPage = ({ navigation, route }) => {
   const { name, email, dietaryPreference, noGoFoods } = route.params;
-
   const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
-  if (!apiKey) {
-    console.warn("Google Maps API key not found. Add EXPO_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.");
-  }
 
-  
   const [mapVisible, setMapVisible] = useState(false);
   const [mapMarker, setMapMarker] = useState(null);
   const [location, setLocation] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [id, setId] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
+  const [restaurantMarkers, setRestaurantMarkers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -74,124 +70,47 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     getLocationAndId();
   }, []);
 
-  useEffect(() => {
-    fetchRestaurants();
-  }, []);
-
-  const fetchRestaurants = () => {
-    setIsLoading(false);
-    setRestaurants([
-      { id: 1, name: "Green Garden", cuisine: "Vegetarian", rating: 4.5 },
-      { id: 2, name: "Pasta Palace", cuisine: "Italian", rating: 4.2 },
-      { id: 3, name: "Sushi Supreme", cuisine: "Japanese", rating: 4.7 },
-    ]);
-  };
-
-  const handleNextPress = () => {
-    if (!selectedPlace) {
-      Alert.alert("Please select a restaurant", "Search and select a restaurant to continue.");
-      return;
-    }
-
-    const mockMenuItems = [
-      { 
-        name: "Salad with Sauteed Vegetables",
-        sustainability: "High sustainability",
-        sustainabilityColor: "#4CAF50"
-      },
-      { 
-        name: "Chicken Burrito Salad",
-        sustainability: "Medium sustainability",
-        sustainabilityColor: "#FFC107"
-      },
-      { 
-        name: "Carnitas Burrito Bowl (no rice)",
-        sustainability: "Low sustainability",
-        sustainabilityColor: "#F44336"
-      }
-    ];
-
-    navigation.navigate('RestaurantMenu', {
-      restaurant: {
-        name: selectedPlace.name,
-        address: selectedPlace.formatted_address,
-        placeId: selectedPlace.place_id
-      },
-      menuItems: mockMenuItems,
-      userPreferences: {
-        name,
-        email,
-        dietaryPreference,
-        noGoFoods
-      }
-    });
-  };
-
-  const toggleMenu = () => {
-    setMenuVisible(!menuVisible);
-  };
-
-  const navigateTo = (page) => {
-    setMenuVisible(false);
-    navigation.navigate(page);
-  };
-
-  const menuOptions = [
-    { id: 'profile', title: 'My Profile', icon: 'person-outline', page: 'UserProfile' },
-    { id: 'security', title: 'Security Settings', icon: 'shield-outline', page: 'Security' },
-    { id: 'reviews', title: 'Restaurant Reviews', icon: 'restaurant-outline', page: 'RestaurantReviews' },
-    { id: 'help', title: 'Help & Contact', icon: 'help-circle-outline', page: 'HelpContact' },
-  ];
-
-  const fetchPlaceDetails = async (latitude, longitude) => {
+  const fetchNearbyRestaurants = async (latitude, longitude) => {
     try {
-      const geocodeResponse = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+      setIsLoading(true);
+      const response = await axios.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', {
         params: {
-          latlng: `${latitude},${longitude}`,
+          location: `${latitude},${longitude}`,
+          radius: 1000, // in meters
+          type: 'restaurant',
           key: apiKey,
         },
       });
   
-      const results = geocodeResponse.data.results;
-      if (results.length > 0) {
-        const placeId = results[0].place_id;
-  
-        const placeDetailsResponse = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
-          params: {
-            place_id: placeId,
-            key: apiKey,
-            fields: 'name,formatted_address,place_id',
-          },
-        });
-  
-        const placeDetails = placeDetailsResponse.data.result;
-        setSelectedPlace({
-          name: placeDetails.name,
-          formatted_address: placeDetails.formatted_address,
-          place_id: placeDetails.place_id,
-        });
-      } else {
-        setSelectedPlace({
-          name: 'No place found',
-          formatted_address: 'Try another location',
-          place_id: `latlng-${latitude}-${longitude}`,
-        });
+      if (response.data.results) {
+        setRestaurantMarkers(response.data.results);
       }
     } catch (error) {
-      console.error("Error fetching place details:", error);
+      console.error('Error fetching nearby restaurants:', error);
+    } finally {
+      setIsLoading(false);
     }
-  };  
+  };
+
+  const openMap = () => {
+    setMapVisible(true);
+    if (location) {
+      fetchNearbyRestaurants(location.latitude, location.longitude);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <BackButton onPress={() => navigation.goBack()} />
         <View style={styles.logoContainer}>
           <Logo />
         </View>
-        <MenuButton onPress={toggleMenu} />
+        <MenuButton onPress={() => setMenuVisible(!menuVisible)} />
       </View>
 
+      {/* Map Modal */}
       <Modal visible={mapVisible} animationType="slide" onRequestClose={() => setMapVisible(false)}>
         <View style={{ flex: 1 }}>
           <TouchableOpacity
@@ -210,18 +129,33 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
               }}
-              onPress={(e) => {
-                const { latitude, longitude } = e.nativeEvent.coordinate;
-                setMapMarker({ latitude, longitude });
-                fetchPlaceDetails(latitude, longitude);
-              }}
             >
-              {mapMarker && <Marker coordinate={mapMarker} title="Selected Location" />}
+              {restaurantMarkers.map((place) => (
+                <Marker
+                  key={place.place_id}
+                  coordinate={{
+                    latitude: place.geometry.location.lat,
+                    longitude: place.geometry.location.lng,
+                  }}
+                  title={place.name}
+                  description={place.vicinity}
+                  onPress={() => {
+                    setSelectedPlace({
+                      name: place.name,
+                      formatted_address: place.vicinity,
+                      place_id: place.place_id,
+                    });
+                    setMapVisible(false);
+                  }}
+                />
+              ))}
             </MapView>
           )}
+
         </View>
       </Modal>
 
+      {/* Form and Search */}
       <View style={styles.formContainer}>
         <Text style={styles.title}>Where are you dining?</Text>
         <Text style={styles.subtitle}>
@@ -260,7 +194,7 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
 
               <TouchableOpacity
                 style={styles.mapButtonSquare}
-                onPress={() => setMapVisible(true)}
+                onPress={openMap}
               >
                 <Ionicons name="map-outline" size={24} color="#011a59" />
               </TouchableOpacity>
@@ -274,102 +208,68 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
           )}
         </View>
 
+        {/* Navigation Buttons */}
         <TouchableOpacity 
           style={styles.nextButton}
-          onPress={handleNextPress}>
+          onPress={() => {
+            if (!selectedPlace) {
+              Alert.alert("Please select a restaurant");
+              return;
+            }
+
+            const mockMenuItems = [
+              { name: "Salad with Sauteed Vegetables", sustainability: "High sustainability", sustainabilityColor: "#4CAF50" },
+              { name: "Chicken Burrito Salad", sustainability: "Medium sustainability", sustainabilityColor: "#FFC107" },
+              { name: "Carnitas Burrito Bowl (no rice)", sustainability: "Low sustainability", sustainabilityColor: "#F44336" },
+            ];
+
+            navigation.navigate('RestaurantMenu', {
+              restaurant: {
+                name: selectedPlace.name,
+                address: selectedPlace.formatted_address,
+                placeId: selectedPlace.place_id
+              },
+              menuItems: mockMenuItems,
+              userPreferences: { name, email, dietaryPreference, noGoFoods },
+            });
+          }}
+        >
           <Text style={styles.buttonText}>Let's go!</Text>
         </TouchableOpacity>
 
+        {/* Camera Option */}
         <Text style={styles.orText}>Or take a picture of the menu instead!</Text>
         <TouchableOpacity
           style={styles.cameraButton}
           onPress={() => navigation.navigate("CameraPage")}
         >
-          <Text style={styles.buttonText}>Open camera</Text>
+          <Text style={styles.buttonText}>Open Camera</Text>
         </TouchableOpacity>
 
+        {/* Demo Button */}
         <TouchableOpacity
           style={styles.demoButton}
           onPress={() => {
-            // Mock data for demo mode
             const mockRestaurant = {
               name: "Chipotle",
               address: "123 Demo Street, San Francisco, CA 94105",
               placeId: "demo-place-id"
             };
-
             const mockMenuItems = [
-              { 
-                name: "Salad with Sauteed Vegetables",
-                sustainability: "High sustainability",
-                sustainabilityColor: "#4CAF50"
-              },
-              { 
-                name: "Chicken Burrito Salad",
-                sustainability: "Medium sustainability",
-                sustainabilityColor: "#FFC107"
-              },
-              { 
-                name: "Carnitas Burrito Bowl (no rice)",
-                sustainability: "Low sustainability",
-                sustainabilityColor: "#F44336"
-              }
+              { name: "Salad with Sauteed Vegetables", sustainability: "High sustainability", sustainabilityColor: "#4CAF50" },
+              { name: "Chicken Burrito Salad", sustainability: "Medium sustainability", sustainabilityColor: "#FFC107" },
+              { name: "Carnitas Burrito Bowl (no rice)", sustainability: "Low sustainability", sustainabilityColor: "#F44336" }
             ];
-
             navigation.navigate('RestaurantMenu', {
               restaurant: mockRestaurant,
               menuItems: mockMenuItems,
-              userPreferences: {
-                name,
-                email,
-                dietaryPreference,
-                noGoFoods
-              }
+              userPreferences: { name, email, dietaryPreference, noGoFoods },
             });
           }}
         >
           <Text style={styles.demoButtonText}>Demo Mode (No API Key)</Text>
         </TouchableOpacity>
       </View>
-      <Modal
-        visible={mapVisible}
-        animationType="slide"
-        onRequestClose={() => setMapVisible(false)}
-        >
-        <View style={{ flex: 1 }}>
-      <TouchableOpacity
-        style={{ padding: 10, backgroundColor: '#eee' }}
-        onPress={() => setMapVisible(false)}
-      >
-      <Text style={styles.closeMapText}>Close Map</Text>
-      </TouchableOpacity>
-
-      {location && (
-        <MapView
-          style={{ flex: 1 }}
-          initialRegion={{
-            latitude: location.latitude,
-            longitude: location.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-          onPress={(e) => {
-            const { latitude, longitude } = e.nativeEvent.coordinate;
-            setMapMarker({ latitude, longitude });
-            setSelectedPlace({
-              name: "Pinned Location",
-              formatted_address: "Dropped pin",
-              place_id: `latlng-${latitude}-${longitude}`,
-            });
-          }}
-        >
-        {mapMarker && (
-          <Marker coordinate={mapMarker} title="Selected Location" />
-        )}
-      </MapView>
-    )}
-  </View>
-</Modal>
     </SafeAreaView>
   );
 };

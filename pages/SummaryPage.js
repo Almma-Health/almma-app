@@ -113,7 +113,7 @@ const SummaryPage = ({ navigation, route }) => {
           <ActivityIndicator size="large" color="#4CAF50" />
         ) : (
           <NextButton 
-            //onPress={handleSubmit} 
+            onPress={handleSubmit} 
             onPress={handleNextPress}
             buttonText="Submit" 
           />

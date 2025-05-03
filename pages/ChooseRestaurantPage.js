@@ -141,7 +141,7 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     { id: 'help', title: 'Help & Contact', icon: 'help-circle-outline', page: 'HelpContact' },
   ];
 
-  const fetchPlaceDetails = async (latitude, longitude) => {
+  const fetchNearbyRestaurants = async (latitude, longitude) => {
     try {
       setIsLoading(true);
       const response = await axios.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', {

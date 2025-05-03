@@ -16,6 +16,7 @@ import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import MenuButton from "../components/MenuButton";
 import axios from 'axios';
+import { createMockCompatibilityRatings } from "../utils/foodCompatibilityRater";
 
 const getLocationPermission = async () => {
   let { status } = await Location.requestForegroundPermissionsAsync();
@@ -70,7 +71,77 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     getLocationAndId();
   }, []);
 
-  const fetchNearbyRestaurants = async (latitude, longitude) => {
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  const fetchRestaurants = () => {
+    setIsLoading(false);
+    setRestaurants([
+      { id: 1, name: "Green Garden", cuisine: "Vegetarian", rating: 4.5 },
+      { id: 2, name: "Pasta Palace", cuisine: "Italian", rating: 4.2 },
+      { id: 3, name: "Sushi Supreme", cuisine: "Japanese", rating: 4.7 },
+    ]);
+  };
+
+  const handleNextPress = () => {
+    if (!selectedPlace) {
+      Alert.alert("Please select a restaurant", "Search and select a restaurant to continue.");
+      return;
+    }
+
+    // Basic menu items
+    const baseMenuItems = [
+      { name: "Salad with Sauteed Vegetables" },
+      { name: "Chicken Burrito Salad" },
+      { name: "Carnitas Burrito Bowl (no rice)" },
+      { name: "Bean and Cheese Burrito" },
+      { name: "Grilled Vegetable Tacos" }
+    ];
+
+    // User preferences from the route params
+    const userPreferences = {
+      name,
+      dietaryPreference,
+      noGoFoods: Array.isArray(noGoFoods) 
+        ? noGoFoods 
+        : noGoFoods.split(',').filter(item => item && item.trim().length > 0)
+    };
+
+    // Generate compatibility ratings for menu items
+    const ratedMenuItems = createMockCompatibilityRatings(
+      userPreferences,
+      baseMenuItems
+    );
+
+    navigation.navigate('RestaurantMenu', {
+      restaurant: {
+        name: selectedPlace.name,
+        address: selectedPlace.formatted_address,
+        placeId: selectedPlace.place_id
+      },
+      menuItems: ratedMenuItems,
+      userPreferences
+    });
+  };
+
+  const toggleMenu = () => {
+    setMenuVisible(!menuVisible);
+  };
+
+  const navigateTo = (page) => {
+    setMenuVisible(false);
+    navigation.navigate(page);
+  };
+
+  const menuOptions = [
+    { id: 'profile', title: 'My Profile', icon: 'person-outline', page: 'UserProfile' },
+    { id: 'security', title: 'Security Settings', icon: 'shield-outline', page: 'Security' },
+    { id: 'reviews', title: 'Restaurant Reviews', icon: 'restaurant-outline', page: 'RestaurantReviews' },
+    { id: 'help', title: 'Help & Contact', icon: 'help-circle-outline', page: 'HelpContact' },
+  ];
+
+  const fetchPlaceDetails = async (latitude, longitude) => {
     try {
       setIsLoading(true);
       const response = await axios.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', {
@@ -97,6 +168,51 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
     if (location) {
       fetchNearbyRestaurants(location.latitude, location.longitude);
     }
+  };
+
+  const demoHandler = () => {
+    // Mock restaurant data
+    const mockRestaurant = {
+      name: "Chipotle",
+      address: "123 Demo Street, San Francisco, CA 94105",
+      placeId: "demo-place-id"
+    };
+
+    // Basic menu items
+    const baseMenuItems = [
+      { name: "Salad with Sauteed Vegetables" },
+      { name: "Chicken Burrito Salad" },
+      { name: "Carnitas Burrito Bowl (no rice)" },
+      { name: "Bean and Cheese Burrito" },
+      { name: "Grilled Vegetable Tacos" }
+    ];
+
+    // User preferences
+    const userPreferences = {
+      name,
+      dietaryPreference,
+      noGoFoods: Array.isArray(noGoFoods) 
+        ? noGoFoods 
+        : noGoFoods.split(',').filter(item => item && item.trim().length > 0)
+    };
+
+    console.log("User preferences for rating:", userPreferences);
+
+    // Generate compatibility ratings for menu items
+    const ratedMenuItems = createMockCompatibilityRatings(
+      userPreferences,
+      baseMenuItems
+    );
+
+    console.log("Rated menu items:", ratedMenuItems);
+
+
+    console.log("Navigating to RestaurantMenu");
+    navigation.navigate('RestaurantMenu', {
+      restaurant: mockRestaurant,
+      menuItems: ratedMenuItems,
+      userPreferences
+    });
   };
 
   return (
@@ -249,25 +365,9 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
         {/* Demo Button */}
         <TouchableOpacity
           style={styles.demoButton}
-          onPress={() => {
-            const mockRestaurant = {
-              name: "Chipotle",
-              address: "123 Demo Street, San Francisco, CA 94105",
-              placeId: "demo-place-id"
-            };
-            const mockMenuItems = [
-              { name: "Salad with Sauteed Vegetables", sustainability: "High sustainability", sustainabilityColor: "#4CAF50" },
-              { name: "Chicken Burrito Salad", sustainability: "Medium sustainability", sustainabilityColor: "#FFC107" },
-              { name: "Carnitas Burrito Bowl (no rice)", sustainability: "Low sustainability", sustainabilityColor: "#F44336" }
-            ];
-            navigation.navigate('RestaurantMenu', {
-              restaurant: mockRestaurant,
-              menuItems: mockMenuItems,
-              userPreferences: { name, email, dietaryPreference, noGoFoods },
-            });
-          }}
+          onPress={demoHandler}
         >
-          <Text style={styles.demoButtonText}>Demo Mode (No API Key)</Text>
+          <Text style={styles.demoButtonText}>Demo Mode (LangChain Rating)</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

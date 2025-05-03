@@ -17,6 +17,7 @@ import SecurityPage from "./pages/SecurityPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import RestaurantMenuPage from "./pages/RestaurantMenuPage";
 import WriteReviewPage from "./pages/WriteReviewPage";
+import RestaurantMenu from "./pages/RestaurantMenu";
 
 const Stack = createStackNavigator();
 
@@ -47,7 +48,7 @@ const App = () => {
         <Stack.Screen name="PastReviews" component={PastReviewsPage} />
         <Stack.Screen name="Security" component={SecurityPage} />
         <Stack.Screen name="UserProfile" component={UserProfilePage} />
-        <Stack.Screen name="RestaurantMenu" component={RestaurantMenuPage} />
+        <Stack.Screen name="RestaurantMenu" component={RestaurantMenu} />
         <Stack.Screen name="WriteReview" component={WriteReviewPage} />
       </Stack.Navigator>
     </NavigationContainer>

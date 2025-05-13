@@ -1,3 +1,4 @@
+// app/write-review.js
 import React, { useState } from 'react';
 import {
   View,
@@ -8,24 +9,49 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Platform,
+  Alert,
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { AirbnbRating } from 'react-native-ratings';
 import BackButton from '../components/BackButton';
 import Logo from '../components/Logo';
+import { supabase } from '../lib/supabase';
 
 export default function WriteReview() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { dishName, restaurantName, sustainability, sustainabilityColor } = params;
+  const { dishName, restaurantName, sustainability, sustainabilityColor, restaurantId } = params;
 
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
 
-  const handleSave = () => {
-    // Here you would typically send the review to your backend
-    console.log('Saving review:', { dishName, rating, review });
-    router.back();
+  const handleSave = async () => {
+    try {
+      const feedbackData = {
+        title: dishName,
+        feedback_text: review,
+        device_os: Platform.OS,
+        is_complete: true,
+        restaurant_id: restaurantId,
+        created_at: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from('feedback')
+        .insert([feedbackData])
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('Review submitted:', data);
+      router.back();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      Alert.alert('Error', 'Failed to submit review. Please try again.');
+    }
   };
 
   return (

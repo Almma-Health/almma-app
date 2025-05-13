@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   SafeAreaView,
@@ -7,16 +7,47 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import BackButton from '../components/BackButton';
 import Logo from '../components/Logo';
 import MenuButton from '../components/MenuButton';
+import ReviewList from '../components/ReviewList';
+import { ENDPOINTS } from '../config/api';
+import { supabase } from '../lib/supabase';
 
 export default function RestaurantReview() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { restaurant, menuItems, userPreferences } = params;
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (restaurant?.id) {
+      fetchReviews();
+    }
+  }, [restaurant]);
+
+  const fetchReviews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('feedback')
+        .select('*')
+        .eq('restaurant_id', restaurant.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setReviews(data || []);
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+      setError('Failed to load reviews');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleWriteReview = (item) => {
     router.push({
@@ -24,6 +55,7 @@ export default function RestaurantReview() {
       params: {
         dishName: item.name,
         restaurantName: restaurant.name,
+        restaurantId: restaurant.id,
         sustainability: item.sustainability,
         sustainabilityColor: item.sustainabilityColor
       }
@@ -90,6 +122,14 @@ export default function RestaurantReview() {
         >
           <Text style={styles.buttonText}>Write a review</Text>
         </TouchableOpacity>
+
+        {loading ? (
+          <ActivityIndicator size="large" color="#7FB3D5" style={styles.loader} />
+        ) : error ? (
+          <Text style={styles.error}>{error}</Text>
+        ) : (
+          <ReviewList reviews={reviews} />
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -176,5 +216,14 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  loader: {
+    marginTop: 20,
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
   },
 }); 

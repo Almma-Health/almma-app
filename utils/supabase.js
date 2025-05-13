@@ -13,6 +13,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: false,
   },
+  realtime: {
+    enabled: false
+  },
+  global: {
+    fetch: fetch,
+    headers: { 'x-application-name': 'almma-app' }
+  }
 })
 
 // Tells Supabase Auth to continuously refresh the session automatically

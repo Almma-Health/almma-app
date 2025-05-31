@@ -114,7 +114,6 @@ const SummaryPage = ({ navigation, route }) => {
         ) : (
           <NextButton 
             onPress={handleSubmit} 
-            onPress={handleNextPress}
             buttonText="Submit" 
           />
         )}

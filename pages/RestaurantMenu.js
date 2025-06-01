@@ -14,6 +14,7 @@ import Logo from "../components/Logo";
 import MenuButton from "../components/MenuButton";
 
 const RestaurantMenu = ({ navigation, route }) => {
+  console.log("route: " + route);
   const { restaurant, menuItems, userPreferences } = route.params;
   console.log("menuItems: " + menuItems);
   return (

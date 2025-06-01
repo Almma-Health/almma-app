@@ -1,90 +1,46 @@
-import { OpenAI } from "langchain/llms/openai";
-import { PromptTemplate } from "langchain/prompts";
-import { LLMChain } from "langchain/chains";
+// import { OpenAI } from "langchain/llms/openai";
+// import { PromptTemplate } from "langchain/prompts";
+// import { LLMChain } from "langchain/chains";
 
-// Initialize the LLM
-const model = new OpenAI({
-  openAIApiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY,
-  temperature: 0.1,
-  modelName: "gpt-3.5-turbo", // or use gpt-4 for better results
-});
+// const llm = new OpenAI({
+//   openAIApiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY,
+//   temperature: 0.7,
+// });
 
-// Create a prompt template for analyzing food compatibility
-const promptTemplate = new PromptTemplate({
-  template: `
-    You are a nutrition and dietary expert AI. Analyze the compatibility between a person and a food item.
-    
-    Person's details:
-    - Name: {personName}
-    - Dietary Preference: {dietaryPreference}
-    - Foods They Don't Eat (No-Go Foods): {noGoFoods}
-    
-    Food item to analyze: {foodItem}
-    
-    Provide a compatibility rating on a scale of 1-3:
-    - 3 (High compatibility): The food aligns perfectly with their dietary preferences and doesn't contain any no-go foods
-    - 2 (Medium compatibility): The food mostly aligns with their preferences but may have minor issues
-    - 1 (Low compatibility): The food conflicts with their dietary preferences or contains no-go foods
-    
-    Return only the numerical rating (1, 2, or 3) with no additional text.
-  `,
-  inputVariables: ["personName", "dietaryPreference", "noGoFoods", "foodItem"],
-});
+// const template = `
+// You are a food compatibility expert. Given a dish and a user's dietary preferences and restrictions, 
+// rate how well the dish matches their needs on a scale of 1-10.
 
-// Create the LLM chain
-const foodCompatibilityChain = new LLMChain({ llm: model, prompt: promptTemplate });
+// Dish: {dish}
+// Dietary Preference: {dietaryPreference}
+// No-Go Foods: {noGoFoods}
 
-/**
- * Rate food compatibility for a person
- * @param {string} personName - Person's name
- * @param {string} dietaryPreference - Dietary preference (e.g., "Vegetarian", "Vegan", "Omnivore")
- * @param {string[]} noGoFoods - Array of foods the person doesn't eat
- * @param {string} foodItem - The food item to analyze
- * @returns {Promise<{rating: number, color: string, label: string}>} - Compatibility rating, color, and label
- */
-export const rateFoodCompatibility = async (
-  personName,
-  dietaryPreference,
-  noGoFoods,
-  foodItem
-) => {
+// Provide a rating (1-10) and a brief explanation.
+// Format: Rating: X/10 - [explanation]
+// `;
+
+// const prompt = new PromptTemplate({
+//   template: template,
+//   inputVariables: ["dish", "dietaryPreference", "noGoFoods"],
+// });
+
+// const chain = new LLMChain({ llm: llm, prompt: prompt });
+
+export const rateFoodCompatibility = async (dish, dietaryPreference, noGoFoods) => {
   try {
-    // Run the LLM chain
-    const response = await foodCompatibilityChain.call({
-      personName,
-      dietaryPreference,
-      noGoFoods: noGoFoods.join(", "),
-      foodItem,
-    });
-
-    // Parse the response to get the numerical rating
-    const rating = parseInt(response.text.trim());
+    // const result = await chain.call({
+    //   dish,
+    //   dietaryPreference,
+    //   noGoFoods: noGoFoods.join(", "),
+    // });
     
-    // Map rating to color and label
-    let color = "#F44336"; // red (default for low)
-    let label = "Low compatibility";
+    // return result.text;
     
-    if (rating === 3) {
-      color = "#4CAF50"; // green
-      label = "High compatibility";
-    } else if (rating === 2) {
-      color = "#FFC107"; // yellow
-      label = "Medium compatibility";
-    }
-
-    return {
-      rating,
-      color,
-      label,
-    };
+    // Temporary mock response
+    return `Rating: 7/10 - This dish appears to be compatible with your dietary preferences.`;
   } catch (error) {
     console.error("Error rating food compatibility:", error);
-    // Default to medium compatibility if there's an error
-    return {
-      rating: 2,
-      color: "#FFC107",
-      label: "Medium compatibility",
-    };
+    return "Unable to rate compatibility at this time.";
   }
 };
 

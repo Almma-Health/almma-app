@@ -15,7 +15,6 @@ import { Ionicons } from "@expo/vector-icons";
 import BackButton from "../components/BackButton";
 import Logo from "../components/Logo";
 import MenuButton from "../components/MenuButton";
-import axios from 'axios';
 import { createMockCompatibilityRatings } from "../utils/foodCompatibilityRater";
 
 const getLocationPermission = async () => {
@@ -143,21 +142,19 @@ const ChooseRestaurantPage = ({ navigation, route }) => {
 
   const fetchNearbyRestaurants = async (latitude, longitude) => {
     try {
-      setIsLoading(true);
-      const response = await axios.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', {
-        params: {
-          location: `${latitude},${longitude}`,
-          radius: 1000, // in meters
-          type: 'restaurant',
-          key: apiKey,
-        },
-      });
-  
-      if (response.data.results) {
-        setRestaurantMarkers(response.data.results);
+      const apiKey = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+      const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=1500&type=restaurant&key=${apiKey}`;
+      
+      // Replace axios with fetch
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.results) {
+        setRestaurants(data.results);
       }
     } catch (error) {
-      console.error('Error fetching nearby restaurants:', error);
+      console.error("Error fetching restaurants:", error);
+      Alert.alert("Error", "Failed to fetch nearby restaurants");
     } finally {
       setIsLoading(false);
     }

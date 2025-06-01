@@ -10,7 +10,7 @@ import MenuButton from "../components/MenuButton";
 const WelcomePage = ({ navigation }) => {
   // Handle navigation to the next screen
   const handleNextPress = () => {
-    navigation.navigate('DietaryInfo');
+    navigation.navigate('DietaryInfo', { name: 'Default Name', email: 'default@example.com' });
   };
 
   return (

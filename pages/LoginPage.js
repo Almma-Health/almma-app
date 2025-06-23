@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import signin from '../utils/authenticationUtils';
 
 const LoginPage = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    // TODO: Implement login logic
+  // Currently disabled password reset as reset link in dev server is localhost and it is not working
+  const handleLogin = async () => {
+    const { error } = await signin(email, password);
+    if(error) {
+      Alert.alert('Unable to Login:', error.message);
+      return;
+    }
     navigation.navigate('Welcome');
   };
 

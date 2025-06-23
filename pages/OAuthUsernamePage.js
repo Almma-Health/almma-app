@@ -11,7 +11,6 @@ const OAuthUsernamePage = () => {
 
   const handleNext = () => {
     if (username.trim()) {
-      // TODO: Store username in user profile
       navigation.navigate('Welcome');
     }
   };

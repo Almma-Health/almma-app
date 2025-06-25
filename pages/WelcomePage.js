@@ -8,14 +8,12 @@ import NextButton from "../components/NextButton";
 import MenuButton from "../components/MenuButton";
 
 const WelcomePage = ({ navigation }) => {
-  // Handle navigation to the next screen
   const handleNextPress = () => {
     navigation.navigate('UserInfo');
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header: Back Button + Logo */}
       <View style={styles.header}>
         <BackButton onPress={() => navigation.goBack()} />
         <View style={styles.logoContainer}>
@@ -24,17 +22,14 @@ const WelcomePage = ({ navigation }) => {
         <MenuButton/>
       </View>
 
-      {/* Welcome Text */}
       <View style={styles.welcomeContainer}>
         <WelcomeText />
       </View>
 
-      {/* Info Text */}
       <View style={styles.infoContainer}>
         <InfoText />
       </View>
 
-      {/* Next Button */}
       <View style={styles.buttonContainer}>
         <NextButton 
           onPress={handleNextPress} 

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+
+import { signup } from '../utils/authenticationUtils';
 
 const SignupPage = () => {
   const navigation = useNavigation();
@@ -9,9 +11,16 @@ const SignupPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSignup = () => {
-    // TODO: Implement signup logic
-    navigation.navigate('Welcome');
+  // Currently disabled email verification as verification is not working
+  const handleSignup = async () => {
+    const { data, error } = await signup(email, password, username);
+    if(error) {
+      Alert.alert('Unable to Sign Up:', error.message);
+      return;
+    }
+    if(data) {
+      navigation.navigate('Welcome');
+    }
   };
 
   return (
